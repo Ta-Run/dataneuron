@@ -5,7 +5,7 @@ const Component1 = () => {
   return (
     <Resizable
       style={{ border: "1px solid #ddd", margin: "8px" }}
-      defaultSize={{ width: 200, height: 200 }}
+      // defaultSize={{ width: 200, height: 200 }}
     >
       <div class="col-lg-4 col-md-6">
       <div class="component">

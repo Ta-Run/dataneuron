@@ -5,7 +5,7 @@ import Component2 from "./Components/Component2";
 
 const App = () => {
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column" ,height:"100vh" }}>
       <Component/>
       <Component1 />
       <Component2/>
