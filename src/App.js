@@ -1,15 +1,13 @@
-import Component from "./Components/Component";
-import Component1 from "./Components/Component1";
-import Component2 from "./Components/Component2";
-
+import Main from "./Components/Main";
+import Sidebar from "./Components/Sidebar";
+import Analytics from "./Components/Analytics";
 
 const App = () => {
   return (
-    <div style={{ display: "flex", flexDirection: "column" ,height:"100vh" }}>
-      <Component/>
-      <Component1 />
-      <Component2/>
-      
+    <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-[auto,1fr] h-screen">
+      <Sidebar className="md:col-span-1" />
+      <Main className="col-span-2" />
+      <Analytics className="md:col-span-3" />
     </div>
   );
 };
