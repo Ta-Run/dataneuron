@@ -1,13 +1,33 @@
+import React,{useState} from "react";
 import Main from "./Components/Main";
 import Sidebar from "./Components/Sidebar";
 import Analytics from "./Components/Analytics";
 
 const App = () => {
+    // State to track the size of each resizable component
+  const [size1, setSize1] = useState({ width: 300, height: 200 });
+  const [size2, setSize2] = useState({ width: 300, height: 200 });
+
+  const handleResize = (id, width, height) => {
+    if (id === "component1") {
+      setSize1({ width, height });
+    } else if (id === "component2") {
+      setSize2({ width, height });
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-[auto,1fr] h-screen">
-      <Sidebar className="md:col-span-1" />
-      <Main className="col-span-2" />
-      <Analytics className="md:col-span-3" />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-screen">
+      <div>
+        <Sidebar id="component1" onResize={handleResize} />
+        
+      </div>
+      <div>
+        <Main size={size1}/>
+      </div>
+      <div>
+        <Analytics size={size2}/>
+      </div>
     </div>
   );
 };
