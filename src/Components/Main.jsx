@@ -2,6 +2,59 @@ import React, { useState, useEffect } from "react";
 import { Resizable } from 're-resizable';
 import axios from 'axios';
 
+const TodoItem = ({ todo, handleEditTodo }) => (
+  <div key={todo._id} className="mb-2">
+    <h3 className="text-lg font-semibold">{todo.title}</h3>
+    <p className="text-gray-600">{todo.description}</p>
+    <div className="flex justify-between mt-2">
+      <button
+        onClick={() => handleEditTodo(todo._id)}
+        className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600"
+      >
+        Edit
+      </button>
+    </div>
+  </div>
+);
+
+const EditTodoForm = ({ title, description, setTitle, setDescription, handleAddOrUpdateTodo }) => (
+  <div className="mb-2">
+    <input
+      type="text"
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      className="border border-gray-300 p-2 rounded-md mb-2"
+      placeholder="Title"
+    />
+    <textarea
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+      className="border border-gray-300 p-2 rounded-md mb-2"
+      placeholder="Description"
+    ></textarea>
+    <button onClick={handleAddOrUpdateTodo} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600">Save</button>
+  </div>
+);
+
+const AddTodoForm = ({ title, description, setTitle, setDescription, handleAddOrUpdateTodo }) => (
+  <div className="mb-2">
+    <input
+      type="text"
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      className="border border-gray-300 p-2 rounded-md mb-2"
+      placeholder="Title"
+    />
+    <textarea
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+      className="border border-gray-300 p-2 rounded-md mb-2"
+      placeholder="Description"
+    ></textarea>
+    <button onClick={handleAddOrUpdateTodo} className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600">Add</button>
+  </div>
+);
+
 const Main = () => {
   // State variables to manage todo data
   const [title, setTitle] = useState("");
@@ -10,16 +63,14 @@ const Main = () => {
   const [loading, setLoading] = useState(false);
   const [editableTodoId, setEditableTodoId] = useState(null);
   const [error, setError] = useState(null);
+  const [showNewTodoInput, setShowNewTodoInput] = useState(false);
 
   // Function to fetch todos from the API
   const fetchTodos = async () => {
     setLoading(true);
     try {
       const response = await axios.get("http://localhost:8000/api/v1/todo/getTodo");
-      console.log(response.data.result
-      )
-      setTodos(response.data.result
-      );
+      setTodos(response.data.result);
       setError(null);
     } catch (error) {
       console.error("Error fetching todos:", error.message);
@@ -33,6 +84,44 @@ const Main = () => {
     fetchTodos();
   }, []); // Empty dependency array ensures this effect runs only once, equivalent to componentDidMount
 
+  const updateTodo = async (todoId, updatedTodoData) => {
+    try {
+      const response = await axios.put(`http://localhost:8000/api/v1/todo/updateTodo/${todoId}`, updatedTodoData);
+      console.log("Todo updated successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating todo:", error.message);
+      throw new Error("Failed to update todo.");
+    }
+  };
+
+
+  // Function to handle adding or updating a todo
+  const handleAddOrUpdateTodo = async () => {
+    try {
+      const updatedTodoData = { title, description, category: "morning" }; // Assuming category is fixed as "morning"
+      if (editableTodoId) {
+        // If there is an editable todo ID, update the todo
+        await updateTodo(editableTodoId, updatedTodoData);
+        setEditableTodoId(null); // Reset editable todo ID
+      } else {
+        // Otherwise, add a new todo
+        await handleAddTodo();
+      }
+      // Clear input fields
+      setTitle("");
+      setDescription("");
+      // Refresh the todo list
+      fetchTodos();
+      // Hide the new todo input fields
+      setShowNewTodoInput(false);
+    } catch (error) {
+      console.error("Error adding or updating todo:", error.message);
+      setError("Failed to add or update todo. Please try again.");
+    }
+  };
+
+
   // Function to handle adding a new todo
   const handleAddTodo = async () => {
     try {
@@ -42,28 +131,22 @@ const Main = () => {
         category: "morning", // Assuming you want to add todos to the "morning" category
       });
       console.log("Todo added successfully:", response.data);
-      setTitle("");
-      setDescription("");
-      fetchTodos(); // Refresh the todo list
     } catch (error) {
       console.error("Error adding todo:", error.message);
-      setError("Failed to add todo. Please try again.");
+      throw new Error("Failed to add todo.");
     }
   };
 
-  // Function to handle updating a todo
-  const handleUpdateTodo = async (id, updatedData) => {
-    try {
-      const response = await axios.put(`http://localhost:8000/api/v1/todo/updateTodo/${id}`, updatedData);
-      console.log("Todo updated successfully:", response.data);
-      setEditableTodoId(null);
-      fetchTodos(); // Refresh the todo list
-    } catch (error) {
-      console.error("Error updating todo:", error.message);
-      setError("Failed to update todo. Please try again.");
-    }
+  // Function to handle edit button click
+  const handleEditTodo = (todoId) => {
+    // Find the todo from the todos array
+    const editableTodo = todos.find(todo => todo._id === todoId);
+    // Set the title and description from the todo to the state
+    setTitle(editableTodo.title);
+    setDescription(editableTodo.description);
+    // Set the editable todo ID to the clicked todo ID
+    setEditableTodoId(todoId);
   };
-
 
   return (
     <Resizable
@@ -78,56 +161,35 @@ const Main = () => {
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 justify-center">
           <div className="bg-white rounded-lg shadow-md p-6 flex flex-col justify-between w-full">
             <div>
-            {todos.map(todo => (
+              {todos.map(todo => (
                 <div key={todo._id}>
                   {editableTodoId === todo._id ? (
-                    <div className="mb-2">
-                      <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="border border-gray-300 p-2 rounded-md mb-2"
-                        placeholder="Title"
-                      />
-                      <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="border border-gray-300 p-2 rounded-md mb-2"
-                        placeholder="Description"
-                      ></textarea>
-                      <button
-                        onClick={() => handleUpdateTodo(todo._id, { title, description })}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 mr-2"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditableTodoId(null)}
-                        className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg shadow-md hover:bg-gray-400"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                    <EditTodoForm
+                      title={title}
+                      description={description}
+                      setTitle={setTitle}
+                      setDescription={setDescription}
+                      handleAddOrUpdateTodo={handleAddOrUpdateTodo}
+                    />
                   ) : (
-                    <div className="mb-2">
-                      <h3 className="text-lg font-semibold">{todo.title}</h3>
-                      <p className="text-gray-600">{todo.description}</p>
-                    </div>
+                    <TodoItem todo={todo} handleEditTodo={handleEditTodo} />
                   )}
-                  <div className="flex justify-between">
-                    <button
-                      onClick={() => setEditableTodoId(todo._id)}
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600 mr-2"
-                    >
-                      Edit
-                    </button>
-                    
-                  </div>
                 </div>
-              ))} 
+              ))}
             </div>
-            <div className="mt-4 flex justify-center space-x-4">
-              <button onClick={handleAddTodo} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600">Add</button>
+            <div className="mt-4">
+              {!showNewTodoInput && (
+                <button onClick={() => setShowNewTodoInput(true)} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600">Add Todo</button>
+              )}
+              {showNewTodoInput && (
+                <AddTodoForm
+                  title={title}
+                  description={description}
+                  setTitle={setTitle}
+                  setDescription={setDescription}
+                  handleAddOrUpdateTodo={handleAddOrUpdateTodo}
+                />
+              )}
             </div>
           </div>
         </div>
