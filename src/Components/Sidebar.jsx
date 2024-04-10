@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Resizable } from 're-resizable';
+import axios from 'axios';
 
-const Sidebar = ({ onResize} ) => {
+const Sidebar = ({ onResize, onCategoryClick }) => {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/getCategories`);
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error.message);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   return (
     <div className="h-screen">
       <Resizable
@@ -18,27 +34,11 @@ const Sidebar = ({ onResize} ) => {
           <div className="flex-shrink-0 bg-gray-800 text-white w-72 py-4 px-2 rounded-lg shadow-md">
             <h2 className="text-lg font-semibold mb-4">Dashboard</h2>
             <ul className="space-y-2">
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Morning</span>
-              </li>
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Evening</span>
-              </li>
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Night</span>
-              </li>
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Work Life</span>
-              </li>
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Study</span>
-              </li>
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Hobbies</span>
-              </li>
-              <li className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4">
-                <span className="text-lg font-semibold">Gym</span>
-              </li>
+              {categories.map(category => (
+                <li key={category} className="flex items-center justify-center rounded-lg border border-gray-300 shadow-md py-2 px-4" onClick={() => onCategoryClick(category)} style={{ cursor: 'pointer' }}>
+                  <span className="text-lg font-semibold">{category}</span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -48,4 +48,3 @@ const Sidebar = ({ onResize} ) => {
 };
 
 export default Sidebar;
- 

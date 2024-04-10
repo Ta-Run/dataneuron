@@ -55,7 +55,7 @@ const AddTodoForm = ({ title, description, setTitle, setDescription, handleAddOr
   </div>
 );
 
-const Main = () => {
+const Main = ({ selectedCategory }) => {
   // State variables to manage todo data
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -65,11 +65,12 @@ const Main = () => {
   const [error, setError] = useState(null);
   const [showNewTodoInput, setShowNewTodoInput] = useState(false);
 
+  
   // Function to fetch todos from the API
   const fetchTodos = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8000/api/v1/todo/getTodo");
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/getTodo`);
       setTodos(response.data.result);
       setError(null);
     } catch (error) {
@@ -86,8 +87,7 @@ const Main = () => {
 
   const updateTodo = async (todoId, updatedTodoData) => {
     try {
-      const response = await axios.put(`http://localhost:8000/api/v1/todo/updateTodo/${todoId}`, updatedTodoData);
-      console.log("Todo updated successfully:", response.data);
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/updateTodo/${todoId}`, updatedTodoData);
       return response.data;
     } catch (error) {
       console.error("Error updating todo:", error.message);
@@ -125,7 +125,7 @@ const Main = () => {
   // Function to handle adding a new todo
   const handleAddTodo = async () => {
     try {
-      const response = await axios.post("http://localhost:8000/api/v1/todo/addTodo", {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/addTodo`, {
         title,
         description,
         category: "morning", // Assuming you want to add todos to the "morning" category
@@ -148,11 +148,14 @@ const Main = () => {
     setEditableTodoId(todoId);
   };
 
+  // Filter todos based on selected category
+  const filteredTodos = selectedCategory ? todos.filter(todo => todo.category === selectedCategory) : todos;
+
   return (
     <Resizable
       defaultSize={{ width: "100%", height: 300 }}
       minHeight={200}
-      maxHeight={500}
+      maxHeight={500} 
     >
       <div className="flex flex-col h-screen bg-gray-100 p-6">
         <h1 className="text-3xl font-bold mb-6">Todos</h1>
@@ -161,8 +164,10 @@ const Main = () => {
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 justify-center">
           <div className="bg-white rounded-lg shadow-md p-6 flex flex-col justify-between w-full">
             <div>
-              {todos.map(todo => (
+              {filteredTodos.map(todo => (
+                
                 <div key={todo._id}>
+                  <h1 className="text-2xl font-bold">{todo.category}</h1>
                   {editableTodoId === todo._id ? (
                     <EditTodoForm
                       title={title}
