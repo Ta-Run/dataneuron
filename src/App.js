@@ -23,7 +23,7 @@ const App = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-screen">
-      {/* <div>
+       <div>
         <Sidebar id="component1" onResize={handleResize} onCategoryClick={handleCategoryClick}/>
         
       </div>
@@ -32,7 +32,7 @@ const App = () => {
       </div>
       <div>
         <Analytics size={size2} />
-      </div> */}
+      </div> 
     </div>
   );
 };
